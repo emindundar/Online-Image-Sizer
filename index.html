@@ -92,11 +92,11 @@
                     <h5 class="my-3">New Sizes</h5>
                     <span class="d-block mb-3">
                       <label for="width">Width: </label>
-                      <input type="number" id="width" />
+                      <input type="number" id="width" value=""/>
                     </span>
                     <span class="d-block mb-3">
                       <label for="height">Height: </label>
-                      <input type="number" id="height" />
+                      <input type="number" id="height" value=""/>
                     </span>
                   </div>
 
@@ -105,7 +105,7 @@
                     <span class="d-block mb-3">
                       <label for="range">Resize by Percentage: </label>
                       <div class="d-flex justify-content-center">
-                      <input type="range" id="range" min="1" max="100" value="50"/>
+                      <input type="range" id="range" min="10" max="200" value="100"/>
                       <div class="ms-1" id="inputRange"></div>
                      </div>
                     </span>
@@ -124,9 +124,7 @@
                   </select>
                 </div>
                 <div class="d-flex justify-content-center">
-                  <button id="btnDownload" class="btn btn-primary">
-                    Download
-                  </button>
+                  <button  id="btnDownload" class="btn btn-primary"></button>
                 </div>
               </div>
             </div>
@@ -137,11 +135,13 @@
     <script>
       const fileSelector = document.getElementById("fileSelector");
       const canvas = document.getElementById("canvas");
-      document
-        .getElementById("customText")
-        .addEventListener("click", function () {
-          document.getElementById("fileSelector").click();
-        });
+      const ctx = canvas.getContext("2d");
+
+      let img;
+
+      document.getElementById("customText").addEventListener("click", function () {
+        document.getElementById("fileSelector").click();
+      });
 
       fileSelector.addEventListener("change", function () {
         document.getElementById("customText").classList.add("d-none");
@@ -150,44 +150,60 @@
         canvas.classList.remove("d-none");
         canvas.classList.add("d-block");
       });
-      const ctx = canvas.getContext("2d");
 
       fileSelector.addEventListener("change", function (event) {
         const file = event.target.files[0];
         const reader = new FileReader();
 
         reader.onload = function (e) {
-          const img = new Image();
+          img = new Image();
           img.onload = function () {
             canvas.height = img.height;
             canvas.width = img.width;
             ctx.drawImage(img, 0, 0);
+            document.getElementById("width").value = canvas.width;
+            document.getElementById("height").value = canvas.height;
 
-            function newSize(){
-            const newWidth =document.getElementById("width").value || img.width;
-            const newHeight =document.getElementById("height").value || img.height;
+            // Yeni boyutları aktarma fonksiyonu
+            function newSize() {
+              const newWidth = document.getElementById("width").value;
+              const newHeight = document.getElementById("height").value;
 
-            canvas.width = newWidth;
-            canvas.height = newHeight;
+              canvas.width = newWidth;
+              canvas.height = newHeight;
 
-            ctx.clearRect(0, 0, newWidth, newHeight);
-            ctx.drawImage(img, 0, 0, newHeight, newWidth);
-          }
-            document.getElementById("width").addEventListener("input",newSize);
-            document.getElementById("height").addEventListener("input",newSize);
+              ctx.clearRect(0, 0, newWidth, newHeight);
+              ctx.drawImage(img, 0, 0, newWidth, newHeight);
+            }
+
+            document.getElementById("width").addEventListener("input", newSize);
+            document.getElementById("height").addEventListener("input", newSize);
           };
 
           img.src = e.target.result;
         };
         reader.readAsDataURL(file);
       });
-      //input range değerini yazdırma
-      const inputRange=document.getElementById("inputRange");
-      document.getElementById("range").addEventListener("change",function(event){
-        const selectedValue=event.target.value;
-        const print=
-        `<label for="range">%${selectedValue}</label>`;
-        inputRange.innerHTML=print;
+
+      // input range değerini yazdırma ve resimi boyutlandırma
+      const inputRange = document.getElementById("inputRange");
+      document.getElementById("range").addEventListener("input", function (event) {
+        const selectedValue = event.target.value;
+
+        let scale = 1;
+        scale = selectedValue / 100;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const newWidth = img.width * scale;
+        const newHeight = img.height * scale;
+
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+
+        ctx.drawImage(img, 0, 0, newWidth, newHeight);
+
+        const print = `<label for="range">%${selectedValue}</label>`;
+        inputRange.innerHTML = print;
       });
     </script>
   </body>
